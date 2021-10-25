@@ -66,26 +66,32 @@ class MyMetric:
         f1 = self.f1(precision, recall)
         cm = self.confusion_matrix(y_true, y_pred)
         accuracy = np.sum(np.diag(cm))/np.sum(cm)
+        # Now we need to store each result for comparison in inner cv
         if self.counter == 0:
             self.counter += 1
-            self.metric['precision'] = precision
-            self.metric['recall'] = recall
-            self.metric['f1'] = f1
-            self.metric['cm'] = cm
-            self.metric['accuracy'] = accuracy
+            self.metric['precision'] = [precision]
+            self.metric['recall'] = [recall]
+            self.metric['f1'] = [f1]
+            self.metric['cm'] = [cm]
+            self.metric['accuracy'] = [accuracy]
         else:
             self.counter += 1
-            self.metric['precision'] = self.running_mean(self.counter, self.metric['precision'], precision)
-            self.metric['recall'] = self.running_mean(self.counter, self.metric['recall'], recall)
-            self.metric['f1'] = self.running_mean(self.counter, self.metric['f1'], f1)
-            self.metric['cm'] = self.running_mean(self.counter, self.metric['cm'], cm)
-            self.metric['accuracy'] = self.running_mean(self.counter, self.metric['accuracy'], accuracy)
+            self.metric['precision'].append(precision)
+            self.metric['recall'].append(recall)
+            self.metric['f1'].append(f1)
+            self.metric['cm'].append(cm)
+            self.metric['accuracy'].append(accuracy)
 
+    def get_raw_metric(self):
+        return self.metric
 
     def get_metric(self):
         """
         A function to return the average metrics
         """
+        for k, v in self.metric.items():
+            # Mean over folds
+            self.metric[k] = np.mean(v, axis=0)
         return self.metric, self.labels
 
 
@@ -96,6 +102,7 @@ if __name__ == '__main__':
     y_true = np.array([7, 2, 7, 2, 3])
     labels = np.array([2,3,7])
     metric = MyMetric(labels)
+    metric.update(y_true, y_pred)
     metric.update(y_true, y_pred)
     result, labels = metric.get_metric()
     assert result['precision'][0] == 1
