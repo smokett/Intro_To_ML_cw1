@@ -79,6 +79,7 @@ def nested_cross_validation(classifier, n_folds, measure='f1'):
         score = metric.get_raw_metric()[measure]
         score = np.mean(score, axis=1) if measure != 'acc' else score
         # Find best tree
+        print('[Evaluating] All folds score in inner CV: {} '.formatscore)
         best_ind = np.argmax(score)
         best_tree = tr_list[best_ind]
         print('[Evaluating] Best tree found in inner CV No.{}, evaluating on best found tree...'.format(best_ind))

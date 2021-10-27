@@ -44,26 +44,31 @@ class DecisionTree:
             feature_sort_idx = np.argsort(feature)
             feature_sorted = feature[feature_sort_idx]
             labels_sorted = labels[feature_sort_idx]
+
+            # List to store all checked points, we DONT have to check same split point twice!
+            checked_split_points = []
             for j in range(len(labels_sorted)-1):
                 # When there is a change of label, we try to split
                 if labels_sorted[j+1] != labels_sorted[j]:
                     mid_point = (feature_sorted[j] + feature_sorted[j+1])/2
+                    if mid_point not in checked_split_points:
+                        # We have checked this split point!
+                        checked_split_points.append(mid_point)
+                        # We need to be explict in case when feature value ties at split point
+                        l_labels = labels_sorted[feature_sorted<mid_point]
+                        r_labels = labels_sorted[feature_sorted>=mid_point]
+                        s_labels = [l_labels, r_labels]
 
-                    # We need to be explict in case when feature value ties at split point
-                    l_labels = labels_sorted[feature_sorted<mid_point]
-                    r_labels = labels_sorted[feature_sorted>=mid_point]
-                    s_labels = [l_labels, r_labels]
+                        # Calculate information gain
+                        ig = cal_info_gain(labels_sorted, s_labels)
 
-                    # Calculate information gain
-                    ig = cal_info_gain(labels_sorted, s_labels)
-
-                    # Find best ig and record the relavant information
-                    if ig > best_ig:
-                        best_ig = ig
-                        best_feature_id = i
-                        best_value = mid_point
-                        d_left = training_dataset[feature_sort_idx[feature_sorted<best_value]]
-                        d_right = training_dataset[feature_sort_idx[feature_sorted>=best_value]]
+                        # Find best ig and record the relavant information
+                        if ig > best_ig:
+                            best_ig = ig
+                            best_feature_id = i
+                            best_value = mid_point
+                            d_left = training_dataset[feature_sort_idx[feature_sorted<best_value]]
+                            d_right = training_dataset[feature_sort_idx[feature_sorted>=best_value]]
         return best_feature_id, best_value, d_left, d_right
 
     def majority_vote(self, training_dataset):
@@ -123,7 +128,7 @@ class DecisionTree:
 
             self.prune(prev_root, train_set, valid_set)
             now_error = self.evaluate_error(valid_set, prev_root)
-            print('now_error:{}, prev_error:{}'.format(now_error, prev_error))
+            print('  now_error:{}, prev_error:{}'.format(now_error, prev_error))
             if now_error == prev_error:
                 break
 
