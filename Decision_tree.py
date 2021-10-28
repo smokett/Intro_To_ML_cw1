@@ -128,7 +128,7 @@ class DecisionTree:
 
             self.prune(prev_root, train_set, valid_set)
             now_error = self.evaluate_error(valid_set, prev_root)
-            print('  now_error:{}, prev_error:{}'.format(now_error, prev_error))
+            #print('  now_error:{}, prev_error:{}'.format(now_error, prev_error))
             if now_error == prev_error:
                 break
 
