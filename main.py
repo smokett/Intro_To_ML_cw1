@@ -29,9 +29,9 @@ if __name__ == '__main__':
     data_clean = load_data('wifi_db/clean_dataset.txt')
     data_noisy = load_data('wifi_db/noisy_dataset.txt')
 
-    
+
     print('-'*30)
-    print('Training cleaning data for part 2:')
+    print('Training cleaning data for part 3:')
     tree, metric, depth_list = train(data_clean, 10, 1024, False)
     print('Result of part 2 with clean data:')  
     print(metric.get_metric())
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     print(str(mean_depth(depth_list)))
 
     print('-'*30)
-    print('Training noisy data for part 2:')
+    print('Training noisy data for part 3:')
     tree, metric, depth_list = train(data_noisy, 10, 1024, False)
     print('Result of part 2 with noisy data:')
     print(metric.get_metric())
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     print(str(mean_depth(depth_list)))
 
     print('-'*30)
-    print('Training clean data for part 3:')
+    print('Training clean data for part 4:')
     tree, metric, depth_list = train(data_clean, 10, 1024, True)
     print('Result of part 3 with clean data:')
     print(metric.get_metric())
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     print(str(mean_depth(depth_list)))
 
     print('-'*30)
-    print('Training noisy data for part 3:')
+    print('Training noisy data for part 4:')
     tree, metric, depth_list = train(data_noisy, 10, 1024, True)
     print('Result of part 3 with noisy data:')
     print(metric.get_metric())
