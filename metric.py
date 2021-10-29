@@ -106,10 +106,7 @@ class MyMetric:
         """
         for k, v in self.metric.items():
             # Mean over folds
-            if k != 'cm':
-                self.metric[k] = np.mean(v, axis=0)
-            else:
-                self.metric[k] = np.sum(v, axis=0)
+            self.metric[k] = np.mean(v, axis=0)
         return self.metric, self.labels
 
 
