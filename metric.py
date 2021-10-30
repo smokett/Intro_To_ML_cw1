@@ -1,3 +1,6 @@
+# This is the metric functions we are going to call in while running the decision tree. We have defined them
+# as a class to keep the code tidy.
+
 import numpy as np
 
 class MyMetric:
