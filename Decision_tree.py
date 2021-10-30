@@ -1,7 +1,12 @@
+## This file defines the decision tree class as well as the nodes. These are used in utils.py
+
 import numpy as np
 from utils import cal_entropy, cal_info_gain, cross_validation, n_fold_split
 
 class Node:
+    '''
+    This defines the node class
+    '''
     def __init__(self, attribute, value, left, right, is_leaf):
         self.attribute = attribute
         self.value = value
@@ -12,6 +17,10 @@ class Node:
 
 
 class DecisionTree:
+    """
+        This class is the final decision tree we are going to use, we have implemented the pruning function
+         and predict function inside.
+    """
     def __init__(self, training_dataset, depth=0):
         self.root, self.depth = self.decision_tree_learning(training_dataset,depth)
 
