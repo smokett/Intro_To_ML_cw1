@@ -1,3 +1,8 @@
+# These are the functions that we use to define our decision tree and do cross validations. The functions
+# are ordered in steps as the instruction of this coursework. One can read and follow this file to have an idea how we
+# constructed the decision tree from the beginning.
+# The last part is the visualization part, which is bonus in this coursework.
+
 from numpy.random import default_rng
 from metric import MyMetric
 import numpy as np
@@ -6,6 +11,11 @@ import matplotlib.pyplot as plt
 LEAF_NODE = dict(boxstyle="square",ec="black",fc="lightskyblue")
 DECISION_NODE = dict(boxstyle="square",ec="black",fc="white")
 ARROW = dict(arrowstyle="<-")
+
+####################################################################################################
+# --------------------------------- Step Two: Creating Decision Trees--------------------------------
+####################################################################################################
+# ----------------------------------------- 2.1 Define functions to calculate information gain
 
 def cal_entropy(labels):
     unique, counts = np.unique(labels, return_counts=True)
@@ -22,6 +32,14 @@ def cal_info_gain(labels_all, labels_split):
     remainder = np.sum(H_split)
     return H_all - remainder
 
+# ------------------------------------------ 2.2 Decision Tree Creating --------------------------------
+# -------------------------------- This is implemented in the Decision_tree.py file --------------------
+
+#######################################################################################################
+# ------------------------------------ Step 3: Evaluation ----------------------------------------------
+#######################################################################################################
+# ------------------------------------------ 3.1 Split the dataset into n folds ------------------------
+
 def n_fold_split(data, n=10, random_generator=default_rng(seed=1024)):
     """
     A function splits the dateset into n-folds, stores and returns them as a list
@@ -31,7 +49,13 @@ def n_fold_split(data, n=10, random_generator=default_rng(seed=1024)):
     index_folds = np.array_split(ary=shuffled_index, indices_or_sections=n)
     return [data[fold_idx] for fold_idx in index_folds]
 
+# ----------------------------------------- 3.2 Implement cross validation ----------------------------
+
 def cross_validation(classifier, n_folds, prune=False):
+    """
+    This function implements the simple cross validation, this function is designed for step 3, in which we
+    don't need to prune the tree here.
+    """
     labels = np.unique(np.array(n_folds)[:, :, -1])
     metric = MyMetric(labels) # Initiate the metric
 
@@ -67,6 +91,13 @@ def cross_validation(classifier, n_folds, prune=False):
         metric.update(y_true,y_pred)
 
     return tr_list, metric, depth_list
+# ----------------------------------- 3.3 Calculating the confusion matrix, accuracy, and F1-measures--------------
+# -------------------------------- This is implemented in the metric.py file ------------------------------------------
+
+######################################################################################################################
+# ---------------------------------- Step 4: Pruning -----------------------------------------------------------------
+######################################################################################################################
+# ----- 4.1 + 4.2 Implementing the nested cross validation and apply pruning to the tree in nested cross validation ---
 
 def nested_cross_validation(classifier, n_folds, measure='f1'):
     assert measure in ['precision', 'recall', 'f1', 'acc'], 'wrong measure provided! Aborting program!'
@@ -119,7 +150,9 @@ def count_depth(node,depth):
     else:
         count_depth(node.left,depth+1)
         count_depth(node.right,depth+1)
-
+##################################################################################
+# ------------- Bonus part: Drawing trees ----------------------------------------
+##################################################################################
 def draw_box(parentPos,selfPos,text,zorder,nodeType,BOX_SIZE=3):
     plt.annotate(text,size=BOX_SIZE,xy=parentPos,xycoords='axes fraction',xytext=selfPos,
     textcoords='axes fraction',va="center",ha="center",bbox=nodeType,arrowprops=ARROW,zorder=zorder)
