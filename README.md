@@ -48,4 +48,6 @@
 * 4.3 Calculating confusion matrix, recall, accuracy, f1 after pruning
 ### Bonus part: Drawing the decision tree. This is implemented in the `utils.py`
 
+## IV. Final Report
+* The final report of this coursework has been located in `\report` directory, it contains `intro_to_ML_cw1_report_final.pdf` and its LaTeX file compressed within zip.
 
