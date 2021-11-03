@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     print('-'*30)
     print('Training noisy data for part 3:')
-    tree, metric, depth_list = train(data_noisy, 10, 1024, False)
+    tree, metric, depth_list = train(data_noisy, 10, 77, False)
     print('Result of part 3 with noisy data:')
     print(metric.get_metric())
     print('Depth for each tree:')

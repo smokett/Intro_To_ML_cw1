@@ -20,16 +20,6 @@ class MyMetric:
                 cm[i][j] = np.sum(np.logical_and(y_true == self.labels[i], y_pred == self.labels[j]))
         return cm 
     
-    def accuracy(self, y_true, y_pred):
-        ac = np.zeros(self.n_labels)
-        for i, label in enumerate(self.labels):
-            TP = np.sum(np.logical_and(y_pred == label, y_true == label))
-            FP = np.sum(np.logical_and(y_pred == label, y_true != label))
-            FN = np.sum(np.logical_and(y_pred != label, y_true == label))
-            TN = np.sum(np.logical_and(y_pred != label, y_true != label))
-            a = (TP+TN)/(TP+FP+FN+TN) if (TP+FP+FN+TN) != 0 else 0
-            ac[i] = a
-        return ac
 
 
 
@@ -83,7 +73,7 @@ class MyMetric:
         recall = self.recall(y_true, y_pred)
         f1 = self.f1(precision, recall)
         cm = self.confusion_matrix(y_true, y_pred)
-        accuracy = self.accuracy(y_true, y_pred)
+        accuracy = np.sum(np.diag(cm))/np.sum(cm)
         # Now we need to store each result for comparison in inner cv
         if self.counter == 0:
             self.counter += 1
