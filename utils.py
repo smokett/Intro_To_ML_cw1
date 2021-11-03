@@ -1,6 +1,21 @@
+# These are the functions that we use to define our decision tree and do cross validations. The functions
+# are ordered in steps as the instruction of this coursework. One can read and follow this file to have an idea how we
+# constructed the decision tree from the beginning.
+# The last part is the visualization part, which is bonus in this coursework.
+
 from numpy.random import default_rng
 from metric import MyMetric
 import numpy as np
+import matplotlib.pyplot as plt
+
+LEAF_NODE = dict(boxstyle="square",ec="black",fc="lightskyblue")
+DECISION_NODE = dict(boxstyle="square",ec="black",fc="white")
+ARROW = dict(arrowstyle="<-")
+
+####################################################################################################
+# --------------------------------- Step Two: Creating Decision Trees--------------------------------
+####################################################################################################
+# ----------------------------------------- 2.1 Define functions to calculate information gain
 
 def cal_entropy(labels):
     unique, counts = np.unique(labels, return_counts=True)
@@ -17,6 +32,14 @@ def cal_info_gain(labels_all, labels_split):
     remainder = np.sum(H_split)
     return H_all - remainder
 
+# ------------------------------------------ 2.2 Decision Tree Creating --------------------------------
+# -------------------------------- This is implemented in the Decision_tree.py file --------------------
+
+#######################################################################################################
+# ------------------------------------ Step 3: Evaluation ----------------------------------------------
+#######################################################################################################
+# ------------------------------------------ 3.1 Split the dataset into n folds ------------------------
+
 def n_fold_split(data, n=10, random_generator=default_rng(seed=1024)):
     """
     A function splits the dateset into n-folds, stores and returns them as a list
@@ -26,13 +49,20 @@ def n_fold_split(data, n=10, random_generator=default_rng(seed=1024)):
     index_folds = np.array_split(ary=shuffled_index, indices_or_sections=n)
     return [data[fold_idx] for fold_idx in index_folds]
 
+# ----------------------------------------- 3.2 Implement cross validation ----------------------------
+
 def cross_validation(classifier, n_folds, prune=False):
+    """
+    This function implements the simple cross validation, this function is designed for step 3, in which we
+    don't need to prune the tree here.
+    """
     labels = np.unique(np.array(n_folds)[:, :, -1])
     metric = MyMetric(labels) # Initiate the metric
 
     # prune_fold = n_folds[0]
     # n_folds = n_folds[1:]
     tr_list = []
+    depth_list = []
     # iteratively update the metric with each fold as validation set
     for i, valid_fold in enumerate(n_folds):
         print('[Training] fold %d as validation' % i)
@@ -51,13 +81,23 @@ def cross_validation(classifier, n_folds, prune=False):
         # Predict for the current fold
         y_pred = tr.predict_all(X_valid, tr.root)
         y_true = y_valid
-
+        global total_depth
+        total_depth = 0
+        count_depth(tr.root,0)
+        depth_list.append(total_depth)
         tr_list.append(tr)
         # Update the metric
-        print('[Training] finished one fold, updating metric')
+        #print('[Training] finished one fold, updating metric')
         metric.update(y_true,y_pred)
 
-    return tr_list, metric
+    return tr_list, metric, depth_list
+# ----------------------------------- 3.3 Calculating the confusion matrix, accuracy, and F1-measures--------------
+# -------------------------------- This is implemented in the metric.py file ------------------------------------------
+
+######################################################################################################################
+# ---------------------------------- Step 4: Pruning -----------------------------------------------------------------
+######################################################################################################################
+# ----- 4.1 + 4.2 Implementing the nested cross validation and apply pruning to the tree in nested cross validation ---
 
 def nested_cross_validation(classifier, n_folds, measure='f1'):
     assert measure in ['precision', 'recall', 'f1', 'acc'], 'wrong measure provided! Aborting program!'
@@ -65,6 +105,7 @@ def nested_cross_validation(classifier, n_folds, measure='f1'):
     metric = MyMetric(labels) # Outer CV has its own new metric
     best_score = 0
     best_tree = None
+    depth_list = []
     for i, test_fold in enumerate(n_folds):
         print('[Training] Getting into Outer CV No.{}'.format(i))
         X_test = test_fold[:, :-1]
@@ -73,21 +114,84 @@ def nested_cross_validation(classifier, n_folds, measure='f1'):
         train_fold = n_folds[:i] + n_folds[i+1:]
         
         print('[Getting into inner CV]'.format(i))
-        tr_list, metric = cross_validation(classifier, train_fold, prune=True)
+        tr_list, metric, _ = cross_validation(classifier, train_fold, prune=True)
         print('[Finshed inner CV]\n'.format(i))
         # Return proposed measure for comparison
         score = metric.get_raw_metric()[measure]
-        score = np.mean(score, axis=1) if measure != 'acc' else score
+        score = np.mean(score, axis=1)
         # Find best tree
         print('[Evaluating] All folds score in inner CV: {} '.format(score))
         best_ind = np.argmax(score)
         best_tree = tr_list[best_ind]
+        global total_depth
+        total_depth = 0
+        count_depth(best_tree.root,0)
+        depth_list.append(total_depth)
         print('[Evaluating] Best tree found in inner CV No.{}, evaluating on best found tree...'.format(best_ind))
         print('[Evaluating] Outer CV No.{} done\n'.format(i))
         y_true = y_test
         y_pred = best_tree.predict_all(X_test, best_tree.root)
         metric.update(y_true,y_pred)
-    return best_tree, metric
+    return best_tree, metric, depth_list
+
+def count_leaf(node, count):
+    if node.is_leaf:
+        return count + 1
+    else:
+        count = count_leaf(node.left, count)
+        count = count_leaf(node.right,count)
+        return count
+
+def count_depth(node,depth):
+    global total_depth
+    if node.is_leaf == True:
+        if total_depth < depth:
+            total_depth = depth
+    else:
+        count_depth(node.left,depth+1)
+        count_depth(node.right,depth+1)
+##################################################################################
+# ------------- Bonus part: Drawing trees ----------------------------------------
+##################################################################################
+def draw_box(parentPos,selfPos,text,zorder,nodeType,BOX_SIZE=3):
+    plt.annotate(text,size=BOX_SIZE,xy=parentPos,xycoords='axes fraction',xytext=selfPos,
+    textcoords='axes fraction',va="center",ha="center",bbox=nodeType,arrowprops=ARROW,zorder=zorder)
+
+def draw_tree(tr, parentPos, direction, depth, totalLeaf,BOX_SIZE=3):
+    selfPos = [0,0]
+    if tr.is_leaf == True:
+        selfPos[0] = (last_leaf[0] + 1.2/totalLeaf)
+        selfPos[1] = 1 - depth/total_depth
+        last_leaf[0] = selfPos[0]
+        last_leaf[1] = selfPos[1]
+        draw_box(parentPos, selfPos, str(int(tr.attribute)), 1/depth, LEAF_NODE, BOX_SIZE)
+        return
+    else:
+        current_leaf = count_leaf(tr,0)
+        selfPos[0] = last_leaf[0] + (current_leaf * (1/totalLeaf) / 2)
+        selfPos[1] = 1 - depth/total_depth
+        selfPos = tuple(selfPos)
+    #root
+    if direction == None:
+        selfPos = parentPos
+    draw_box(parentPos, selfPos, str(tr.attribute) + "<" + str(tr.value), 1/depth, DECISION_NODE, BOX_SIZE)
+    if tr.left != None:
+        draw_tree(tr.left,selfPos,"l",depth+1, totalLeaf, BOX_SIZE)
+    if tr.right != None:
+        draw_tree(tr.right,selfPos,"r",depth+1, totalLeaf, BOX_SIZE)
+    return
+
+def visualize(root, filename, BOX_SIZE=3):
+    global last_leaf, total_depth
+    last_leaf = [-0.1,0]
+    total_depth = 0
+    fig = plt.figure(frameon = False)
+    fig.set_size_inches(16,10)
+    plt.axis('off')
+    totalLeaf = count_leaf(root, 0)
+    count_depth(root,0)
+    draw_tree(root,(0.5,0.9),None,1, totalLeaf,BOX_SIZE)
+    plt.savefig(filename,dpi=400, bbox_inches = "tight")
 
 
 if __name__ == '__main__':

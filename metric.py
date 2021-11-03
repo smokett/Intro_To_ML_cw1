@@ -1,3 +1,6 @@
+# This is the metric functions we are going to call in while running the decision tree. We have defined them
+# as a class to keep the code tidy.
+
 import numpy as np
 
 class MyMetric:
@@ -16,6 +19,19 @@ class MyMetric:
             for j in range(self.n_labels):
                 cm[i][j] = np.sum(np.logical_and(y_true == self.labels[i], y_pred == self.labels[j]))
         return cm 
+    
+    def accuracy(self, y_true, y_pred):
+        ac = np.zeros(self.n_labels)
+        for i, label in enumerate(self.labels):
+            TP = np.sum(np.logical_and(y_pred == label, y_true == label))
+            FP = np.sum(np.logical_and(y_pred == label, y_true != label))
+            FN = np.sum(np.logical_and(y_pred != label, y_true == label))
+            TN = np.sum(np.logical_and(y_pred != label, y_true != label))
+            a = (TP+TN)/(TP+FP+FN+TN) if (TP+FP+FN+TN) != 0 else 0
+            ac[i] = a
+        return ac
+
+
 
     def precision(self, y_true, y_pred):
         """
@@ -53,6 +69,8 @@ class MyMetric:
             else:
                 result[i] = 2*(precision[i]*recall[i])/(precision[i]+recall[i])
         return result
+    
+    
 
     def running_mean(self, k, prev, now):
         return prev + 1/k * (now-prev)
@@ -65,22 +83,22 @@ class MyMetric:
         recall = self.recall(y_true, y_pred)
         f1 = self.f1(precision, recall)
         cm = self.confusion_matrix(y_true, y_pred)
-        accuracy = np.sum(np.diag(cm))/np.sum(cm)
+        accuracy = self.accuracy(y_true, y_pred)
         # Now we need to store each result for comparison in inner cv
         if self.counter == 0:
             self.counter += 1
+            self.metric['accuracy'] = [accuracy]
             self.metric['precision'] = [precision]
             self.metric['recall'] = [recall]
             self.metric['f1'] = [f1]
             self.metric['cm'] = [cm]
-            self.metric['accuracy'] = [accuracy]
         else:
             self.counter += 1
+            self.metric['accuracy'].append(accuracy)
             self.metric['precision'].append(precision)
             self.metric['recall'].append(recall)
             self.metric['f1'].append(f1)
             self.metric['cm'].append(cm)
-            self.metric['accuracy'].append(accuracy)
 
     def get_raw_metric(self):
         return self.metric
