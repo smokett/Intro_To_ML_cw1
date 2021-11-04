@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.random import default_rng
 from Decision_tree import DecisionTree
-from utils import n_fold_split, cross_validation, nested_cross_validation, visualize
+from utils import n_fold_split, cross_validation, nested_cross_validation
 from metric import MyMetric
 
 
@@ -30,35 +30,35 @@ if __name__ == '__main__':
     data_noisy = load_data('wifi_db/noisy_dataset.txt')
 
 
-    # print('-'*30)
-    # print('Training cleaning data for part 3:')
-    # tree, metric, depth_list = train(data_clean, 10, 1024, False)
-    # print('Result of part 3 with clean data:')  
-    # print(metric.get_metric())
-    # print('Depth for each tree:')
-    # print(depth_list)
-    # print('Avarage of depth:')
-    # print(str(mean_depth(depth_list)))
+    print('-'*30)
+    print('Training cleaning data for part 3:')
+    tree, metric, depth_list = train(data_clean, 10, 1024, False)
+    print('Result of part 3 with clean data:')  
+    print(metric.get_metric())
+    print('Depth for each tree:')
+    print(depth_list)
+    print('Avarage of depth:')
+    print(str(mean_depth(depth_list)))
 
-    # print('-'*30)
-    # print('Training noisy data for part 3:')
-    # tree, metric, depth_list = train(data_noisy, 10, 1024, False)
-    # print('Result of part 3 with noisy data:')
-    # print(metric.get_metric())
-    # print('Depth for each tree:')
-    # print(depth_list)
-    # print('Avarage of depth:')
-    # print(str(mean_depth(depth_list)))
+    print('-'*30)
+    print('Training noisy data for part 3:')
+    tree, metric, depth_list = train(data_noisy, 10, 1024, False)
+    print('Result of part 3 with noisy data:')
+    print(metric.get_metric())
+    print('Depth for each tree:')
+    print(depth_list)
+    print('Avarage of depth:')
+    print(str(mean_depth(depth_list)))
 
-    # print('-'*30)
-    # print('Training clean data for part 4:')
-    # tree, metric, depth_list = train(data_clean, 10, 1024, True)
-    # print('Result of part 4 with clean data:')
-    # print(metric.get_metric())
-    # print('Depth for each tree:')
-    # print(depth_list)
-    # print('Avarage of depth:')
-    # print(str(mean_depth(depth_list)))
+    print('-'*30)
+    print('Training clean data for part 4:')
+    tree, metric, depth_list = train(data_clean, 10, 1024, True)
+    print('Result of part 4 with clean data:')
+    print(metric.get_metric())
+    print('Depth for each tree:')
+    print(depth_list)
+    print('Avarage of depth:')
+    print(str(mean_depth(depth_list)))
 
     print('-'*30)
     print('Training noisy data for part 4:')
@@ -69,5 +69,4 @@ if __name__ == '__main__':
     print(depth_list)
     print('Avarage of depth:')
     print(str(mean_depth(depth_list)))
-    visualize(tree.root,'test.png')
 

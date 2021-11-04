@@ -97,20 +97,27 @@ class DecisionTree:
         return np.sum(y_true!=y_pred)
 
     def prune(self, root, train_set, valid_set):
+        """
+        A function to prune the tree
+        """
+        # Current node can be candidate for merging
         if root.left.is_leaf and root.right.is_leaf:
-            if len(valid_set) >0:
+            # If no valid data flowing in, we just keep the node as it is
+            if len(valid_set) > 0:
+                # Calculate misclassified validation data if not merge
                 valid_error = self.evaluate_error(valid_set, root)
+                # Majority vote should be derived from training data
                 voting_label = self.majority_vote(train_set)
+                # Calculate misclassified validation data if merge
                 voting_valid_error = np.sum(valid_set[:,-1] != voting_label)
-
+                # Only merge the leaves if we had at least same error or even less error
                 if valid_error >= voting_valid_error:
-                    print('  ONE NODE GONE!!')
                     root.left = None
                     root.right = None
                     root.attribute = voting_label
                     root.value = None
                     root.is_leaf = True
-                    
+        # Current node is not a candidate for merging            
         else:
             # Divide data into two branches
             l_valid_data = valid_set[valid_set[:, root.attribute] < root.value]
@@ -143,8 +150,8 @@ class DecisionTree:
             self.prune(root, train_set, valid_set)
             # Store the error after second prune
             now_error = self.evaluate_error(valid_set, root)
+            # print('  now_error:{}, prev_error:{}'.format(now_error, prev_error))
             # Check if second prune indeed gives an improvement
-            print('  now_error:{}, prev_error:{}'.format(now_error, prev_error))
             # If no improvment, we stop pruning
             if now_error == prev_error:
                 break
