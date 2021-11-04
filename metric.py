@@ -19,9 +19,6 @@ class MyMetric:
             for j in range(self.n_labels):
                 cm[i][j] = np.sum(np.logical_and(y_true == self.labels[i], y_pred == self.labels[j]))
         return cm 
-    
-
-
 
     def precision(self, y_true, y_pred):
         """
@@ -59,11 +56,6 @@ class MyMetric:
             else:
                 result[i] = 2*(precision[i]*recall[i])/(precision[i]+recall[i])
         return result
-    
-    
-
-    def running_mean(self, k, prev, now):
-        return prev + 1/k * (now-prev)
 
     def update(self, y_true, y_pred):
         """
@@ -91,6 +83,9 @@ class MyMetric:
             self.metric['cm'].append(cm)
 
     def get_raw_metric(self):
+        """
+        A function to return the raw metric dictionary
+        """
         return self.metric
 
     def get_metric(self):

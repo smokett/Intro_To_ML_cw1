@@ -88,6 +88,9 @@ class DecisionTree:
         return unique[np.argmax(counts)]
 
     def evaluate_error(self, valid_set, node):
+        """
+        A function to calculate the number of mis-classified samples
+        """
         X = valid_set[:, :-1]
         y_true = valid_set[:, -1]
         y_pred = self.predict_all(X, node)
@@ -100,7 +103,8 @@ class DecisionTree:
                 voting_label = self.majority_vote(train_set)
                 voting_valid_error = np.sum(valid_set[:,-1] != voting_label)
 
-                if valid_error > voting_valid_error:
+                if valid_error >= voting_valid_error:
+                    print('  ONE NODE GONE!!')
                     root.left = None
                     root.right = None
                     root.attribute = voting_label
@@ -129,17 +133,23 @@ class DecisionTree:
 
     def iterative_prune(self, root, train_set, valid_set):
 
+        # First prune
+        self.prune(root, train_set, valid_set)
+        # Store the initial error
+        prev_error = self.evaluate_error(valid_set, root)
         # Each time, we prune, it is a guarenteed improvement
         while True:
+            # Try prune again
             self.prune(root, train_set, valid_set)
-            prev_root = root
-            prev_error = self.evaluate_error(valid_set, prev_root)
-
-            self.prune(prev_root, train_set, valid_set)
-            now_error = self.evaluate_error(valid_set, prev_root)
-            #print('  now_error:{}, prev_error:{}'.format(now_error, prev_error))
+            # Store the error after second prune
+            now_error = self.evaluate_error(valid_set, root)
+            # Check if second prune indeed gives an improvement
+            print('  now_error:{}, prev_error:{}'.format(now_error, prev_error))
+            # If no improvment, we stop pruning
             if now_error == prev_error:
                 break
+            # Otherwise, update current error
+            prev_error = now_error
 
     def predict_all(self, X, node):
         """
